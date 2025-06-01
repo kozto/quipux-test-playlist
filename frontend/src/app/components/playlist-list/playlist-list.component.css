@@ -1,0 +1,11 @@
+.error-message { color: red; }
+
+.delete-button { margin-left: 10px; background-color: lightcoral; }
+
+.playlist-details { margin-top: 20px; padding: 15px; border: 1px solid #ccc; }
+
+ul { list-style-type: none; padding: 0; }
+
+li { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+
+li:hover { background-color: #f0f0f0; }

@@ -79,7 +79,9 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Error: El nombre de usuario ya esta en uso!");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error: El nombre de usuario ya esta en uso!");
+            return ResponseEntity.badRequest().body(errorResponse);
         }
 
         Set<String> roles = new HashSet<>();

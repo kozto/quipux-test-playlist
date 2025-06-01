@@ -1,0 +1,52 @@
+<div>
+  <button *ngIf="authService.isLoggedIn()" (click)="authService.logout()">Cerrar Sesion</button>
+  <h2>Mis Listas de Reproduccion</h2>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- Formulario para crear nueva playlist -->
+  <h3>Crear Nueva Lista</h3>
+  <form [formGroup]="playlistForm" (ngSubmit)="onSubmitPlaylist()">
+    <div>
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" formControlName="nombre">
+       <div *ngIf="playlistForm.get('nombre')?.invalid && playlistForm.get('nombre')?.touched">
+        <small class="error-message">El nombre es requerido.</small>
+      </div>
+    </div>
+    <div>
+      <label for="descripcion">Descripcion:</label>
+      <input type="text" id="descripcion" formControlName="descripcion">
+    </div>
+    <button type="submit" [disabled]="playlistForm.invalid">Crear Lista</button>
+  </form>
+  <hr>
+
+  <!-- Lista de playlists existentes -->
+  <ul *ngIf="playlists.length > 0; else noPlaylists">
+    <li *ngFor="let playlist of playlists" (click)="viewPlaylistDetails(playlist.nombre)">
+      {{ playlist.nombre }} - {{ playlist.descripcion }}
+      <button (click)="deletePlaylist(playlist.nombre, $event)" class="delete-button">Eliminar</button>
+    </li>
+  </ul>
+  <ng-template #noPlaylists>
+    <p>No hay listas de reproduccion disponibles.</p>
+  </ng-template>
+
+  <!-- Modal o seccion para detalles de playlist -->
+  <div *ngIf="selectedPlaylist" class="playlist-details">
+    <h3>Detalles de: {{ selectedPlaylist.nombre }}</h3>
+    <p><strong>Descripcion:</strong> {{ selectedPlaylist.descripcion }}</p>
+    <h4>Canciones:</h4>
+    <ul *ngIf="selectedPlaylist.canciones && selectedPlaylist.canciones.length > 0; else noCanciones">
+      <li *ngFor="let cancion of selectedPlaylist.canciones">
+        {{ cancion.titulo }} - {{ cancion.artista }} ({{ cancion.album }}, {{ cancion.anno }}) - {{ cancion.genero }}
+      </li>
+    </ul>
+    <ng-template #noCanciones><p>Esta lista no tiene canciones.</p></ng-template>
+    <button (click)="closeDetails()">Cerrar Detalles</button>
+  </div>
+</div>
+
+
+

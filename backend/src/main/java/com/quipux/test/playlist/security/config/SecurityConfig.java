@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,13 +21,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 /**
  * @author Oscar Chamorro
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Para usar @PreAuthorize, @PostAuthorize
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -34,30 +40,29 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
-    
+
     @Autowired
     @Qualifier("customAuthEntryPoint")
-    private AuthenticationEntryPoint authEntryPoint;    // AuthenticationEntryPoint personalizado
+    private AuthenticationEntryPoint authEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Deshabilitar CSRF para APIs stateless
+            .cors(Customizer.withDefaults()) 
+            .csrf(AbstractHttpConfigurer::disable)
             .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(authEntryPoint) // <--- CONFIGURA TU ENTRY POINT AQUI
+                .authenticationEntryPoint(authEntryPoint)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/h2-console/**").permitAll() // Endpoints de autenticacion y H2 publicos
-                .requestMatchers("/lists/**").authenticated() // Proteger /lists, requiere autenticacion
-                // .requestMatchers(HttpMethod.GET, "/lists/**").hasAnyRole("USER", "ADMIN") // Autorizacion por rol
-                // .requestMatchers(HttpMethod.POST, "/lists").hasRole("ADMIN")
+                .requestMatchers("/auth/**", "/h2-console/**").permitAll()
+                .requestMatchers("/lists/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // API Stateless
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // Añadir filtro JWT
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         http.headers(headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.disable()));
 
@@ -66,13 +71,11 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
@@ -81,7 +84,26 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        
         return config.getAuthenticationManager();
     }
+
+    // Configuracion de CORS
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Origenes permitidos 
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); 
+        // Metodos HTTP permitidos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); 
+        // Headers permitidos
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
+        // Permitir credenciales (cookies, autorizacion, etc.)
+        configuration.setAllowCredentials(true); 
+        configuration.setMaxAge(3600L); 
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
+
