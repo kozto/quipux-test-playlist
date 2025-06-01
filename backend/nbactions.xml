@@ -16,4 +16,15 @@
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-clean install</actionName>
+            <displayName>clean install</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>install</goal>
+            </goals>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+        </action>
     </actions>
