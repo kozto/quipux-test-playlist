@@ -1,7 +1,6 @@
 package com.quipux.test.playlist.service;
 
 import com.quipux.test.playlist.dto.ListaReproduccionDto;
-import com.quipux.test.playlist.model.ListaReproduccion;
 import java.util.List;
 
 /**
