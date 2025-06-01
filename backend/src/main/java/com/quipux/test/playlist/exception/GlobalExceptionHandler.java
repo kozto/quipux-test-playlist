@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PlaylistNotFoundException.class)
     public ResponseEntity<Object> handlePlaylistNotFoundException(PlaylistNotFoundException ex) {
+        
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND); // 404
@@ -27,13 +28,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PlaylistAlreadyExistsException.class)
     public ResponseEntity<Object> handlePlaylistAlreadyExistsException(PlaylistAlreadyExistsException ex) {
+        
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST); // 400 (o 409 Conflict si se prefiere)
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST); // 400 
     }
 
-    @ExceptionHandler(IllegalArgumentException.class) // Por si alguna validación manual lanza esto
+    @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST); // 400
@@ -41,6 +44,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        
         Map<String, Object> body = new HashMap<>();
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
@@ -48,17 +52,16 @@ public class GlobalExceptionHandler {
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.toList());
         body.put("errors", errors);
-        body.put("message", "Error de validación"); // Mensaje general
+        body.put("message", "Error de validación");
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST); // 400
     }
 
     // Un manejador genérico para otras excepciones no capturadas
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
+        
         Map<String, Object> body = new HashMap<>();
         body.put("message", "Ocurrió un error inesperado en el servidor.");
-        // Es buena idea loggear la excepción aquí
-        // log.error("Error inesperado", ex);
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR); // 500
     }
     
